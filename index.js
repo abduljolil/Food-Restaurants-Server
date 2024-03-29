@@ -1,4 +1,7 @@
 const express = require('express');
+// const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+
+const { MongoClient, ServerApiVersion } = require('mongodb');
 const app = express();
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
@@ -18,10 +21,12 @@ const port = process.env.PORT || 5000;
 // middleware
 app.use(cors());
 app.use(express.json());
+// Allow CORS requests from your frontend origin
+app.use(cors({ origin: 'http://localhost:5173' }));
 
 
-const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
-const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.swu9d.mongodb.net/?retryWrites=true&w=majority`;
+
+const uri = `mongodb+srv://${process.env.BD_USER}:${process.env.BD_PASS}@cluster0.j0ovfoc.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
@@ -61,7 +66,9 @@ async function run() {
         if (err) {
           return res.status(401).send({ message: 'unauthorized access' })
         }
+
         req.decoded = decoded;
+        // console.log(req.decoded);
         next();
       })
     }
@@ -69,8 +76,13 @@ async function run() {
     // use verify admin after verifyToken
     const verifyAdmin = async (req, res, next) => {
       const email = req.decoded.email;
+      console.log(req.decoded);
+
       const query = { email: email };
+      // console.log(query);
+
       const user = await userCollection.findOne(query);
+      // console.log(user);
       const isAdmin = user?.role === 'admin';
       if (!isAdmin) {
         return res.status(403).send({ message: 'forbidden access' });
@@ -81,18 +93,23 @@ async function run() {
     // users related api
     app.get('/users', verifyToken, verifyAdmin, async (req, res) => {
       const result = await userCollection.find().toArray();
+      console.log('result',result);
       res.send(result);
     });
 
     app.get('/users/admin/:email', verifyToken, async (req, res) => {
       const email = req.params.email;
+      console.log(email,req.decoded.email);
 
       if (email !== req.decoded.email) {
         return res.status(403).send({ message: 'forbidden access' })
       }
 
       const query = { email: email };
+      console.log(query);
+      // const user = await userCollection.findOne(query);
       const user = await userCollection.findOne(query);
+      console.log('Fetched user:', user); 
       let admin = false;
       if (user) {
         admin = user?.role === 'admin';
@@ -246,9 +263,9 @@ async function run() {
       // send user email about payment confirmation
       mg.messages
         .create(process.env.MAIL_SENDING_DOMAIN, {
-          from: "Mailgun Sandbox <postmaster@sandboxbdfffae822db40f6b0ccc96ae1cb28f3.mailgun.org>",
-          to: ["jhankarmahbub7@gmail.com"],
-          subject: "Bistro Boss Order Confirmation",
+          from: "Mailgun Sandbox <postmaster@sandboxaf2fe97ea6084cedb983969853a87ecb.mailgun.org.mailgun.org>",
+          to: ["jalil.mariya.31@gmail.com"],
+          subject: " Food Restaurants Order Confirmation",
           text: "Testing some Mailgun awesomness!",
           html: `
             <div>
@@ -344,7 +361,7 @@ async function run() {
 
     })
 
-    // Send a ping to confirm a successful connection
+    // // Send a ping to confirm a successful connection
     // await client.db("admin").command({ ping: 1 });
     // console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
@@ -360,24 +377,10 @@ app.get('/', (req, res) => {
 })
 
 app.listen(port, () => {
-  console.log(`Bistro boss is sitting on port ${port}`);
+  console.log(` Food Restaurants is sitting on port ${port}`);
 })
+ 
+ 
 
-/**
- * --------------------------------
- *      NAMING CONVENTION
- * --------------------------------
- * app.get('/users')
- * app.get('/users/:id')
- * app.post('/users')
- * app.put('/users/:id')
- * app.patch('/users/:id')
- * app.delete('/users/:id')
- * 
-*/
 
-git add README.md
-git commit -m "first commit"
-git branch -M main
-git remote add origin https://github.com/abduljolil/Food-Restaurants-Server.git
-git push -u origin main
+

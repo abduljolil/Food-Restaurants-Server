@@ -1,7 +1,7 @@
 const express = require('express');
-// const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 
-const { MongoClient, ServerApiVersion } = require('mongodb');
+// const { MongoClient, ServerApiVersion } = require('mongodb');
 const app = express();
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
@@ -21,8 +21,10 @@ const port = process.env.PORT || 5000;
 // middleware
 app.use(cors());
 app.use(express.json());
-// Allow CORS requests from your frontend origin
-app.use(cors({ origin: 'http://localhost:5173' }));
+app.use(cors({
+  origin: ['https://food-restaurants-9cdf2.web.app',],
+  credentials: true
+}));
 
 
 
@@ -76,7 +78,7 @@ async function run() {
     // use verify admin after verifyToken
     const verifyAdmin = async (req, res, next) => {
       const email = req.decoded.email;
-      console.log(req.decoded);
+      // console.log(req.decoded);
 
       const query = { email: email };
       // console.log(query);
@@ -93,7 +95,7 @@ async function run() {
     // users related api
     app.get('/users', verifyToken, verifyAdmin, async (req, res) => {
       const result = await userCollection.find().toArray();
-      console.log('result',result);
+      // console.log('result',result);
       res.send(result);
     });
 
@@ -106,10 +108,10 @@ async function run() {
       }
 
       const query = { email: email };
-      console.log(query);
+      // console.log(query);
       // const user = await userCollection.findOne(query);
       const user = await userCollection.findOne(query);
-      console.log('Fetched user:', user); 
+      // console.log('Fetched user:', user); 
       let admin = false;
       if (user) {
         admin = user?.role === 'admin';
@@ -157,6 +159,7 @@ async function run() {
 
     app.get('/menu/:id', async (req, res) => {
       const id = req.params.id;
+
       const query = { _id: new ObjectId(id) }
       const result = await menuCollection.findOne(query);
       res.send(result);
